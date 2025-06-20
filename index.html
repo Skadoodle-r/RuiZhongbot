@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大模型工具调用界面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .input-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        textarea {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            min-height: 100px;
+            resize: vertical;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .response-section {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 10px;
+            min-height: 200px;
+        }
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>大模型工具调用界面</h1>
+        
+        <div class="input-section">
+            <label for="user-input">请输入你的问题:</label>
+            <textarea id="user-input" placeholder="在这里输入你的问题..."></textarea>
+            <button id="submit-btn">发送请求</button>
+        </div>
+        
+        <div class="response-section" id="response-container">
+            <div class="loading" id="loading-indicator" style="display: none;">处理中，请稍候...</div>
+            <div id="response-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // DOM元素
+        const userInput = document.getElementById('user-input');
+        const submitBtn = document.getElementById('submit-btn');
+        const responseContainer = document.getElementById('response-container');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const responseContent = document.getElementById('response-content');
+
+        // 大模型调用函数 - 预留结构
+        async function callLargeModel(inputText) {
+            try {
+                // 显示加载状态
+                loadingIndicator.style.display = 'block';
+                responseContent.innerHTML = '';
+
+                // 这里是调用大模型的预留结构
+                // 实际使用时，需要替换为你的FastAPI后端API地址
+                const apiUrl = 'http://localhost:8000/api/call-model';
+                
+                // 发送请求到后端
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        prompt: inputText,
+                        // 可以添加其他参数，如模型名称、温度等
+                        model: 'default-model',
+                        temperature: 0.7
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP错误! 状态码: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                // 假设后端返回的结果在result.answer字段中
+                return result.answer || '未获取到有效响应';
+                
+            } catch (error) {
+                console.error('调用大模型时出错:', error);
+                return `调用出错: ${error.message}`;
+            } finally {
+                // 隐藏加载状态
+                loadingIndicator.style.display = 'none';
+            }
+        }
+
+        // 事件监听
+        submitBtn.addEventListener('click', async () => {
+            const inputText = userInput.value.trim();
+            if (!inputText) {
+                alert('请输入问题内容');
+                return;
+            }
+
+            // 调用大模型并显示结果
+            const response = await callLargeModel(inputText);
+            responseContent.innerHTML = response;
+        });
+
+        // 支持按Enter键提交（按住Shift+Enter换行）
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                submitBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>
